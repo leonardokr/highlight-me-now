@@ -5,12 +5,11 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.markup.TextAttributes
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiWhiteSpace
-import com.intellij.ui.ColorUtil
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.Key
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.ui.ColorUtil
 import java.awt.Color
 
 class HighlightAnnotator : Annotator {
@@ -20,78 +19,65 @@ class HighlightAnnotator : Annotator {
     }
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-        if (element is PsiFile || element is PsiWhiteSpace) return
+        // Process only the PsiFile to scan the entire document once
+        if (element !is PsiFile) return
 
-        // Only process leaf elements (no PSI children)
-        if (element.firstChild != null) return
+        val document = element.viewProvider.document ?: return
+        val text = document.text
+        if (text.isEmpty()) return
 
-        val text = element.text
-        if (text.isNullOrBlank()) return
-        
         val patterns = HighlightSettingsState.getInstance().patterns
         if (patterns.isEmpty()) return
 
-        val document = element.containingFile.viewProvider.document ?: return
-        val session = holder.currentAnnotationSession
-        var highlightedLines = session.getUserData(HIGHLIGHTED_LINES_KEY)
-        if (highlightedLines == null) {
-            highlightedLines = mutableSetOf()
-            session.putUserData(HIGHLIGHTED_LINES_KEY, highlightedLines)
-        }
-        
-        val elementRange = element.textRange
-        
+        val highlightedLines = mutableSetOf<Int>()
+
         for (item in patterns) {
             if (item.pattern.isEmpty()) continue
-            
+
             val regex = try {
                 Regex(item.pattern, RegexOption.IGNORE_CASE)
             } catch (e: Exception) {
-                null
-            } ?: continue
+                continue
+            }
 
             val results = regex.findAll(text)
             for (match in results) {
-                val matchStartInFile = elementRange.startOffset + match.range.first
-                val matchEndInFile = elementRange.startOffset + match.range.last + 1
-                
-                if (matchStartInFile >= document.textLength) continue
+                val matchStart = match.range.first
+                val matchEnd = match.range.last + 1
 
-                val matchRange = TextRange(matchStartInFile, matchEndInFile)
-                val lineNumber = document.getLineNumber(matchStartInFile)
+                if (matchStart >= text.length) continue
 
+                val lineNumber = document.getLineNumber(matchStart)
                 val bgColor = parseColor(item.background)
                 val fgColor = parseColor(item.color)
 
                 if (bgColor == null && fgColor == null) continue
 
-                // Highlight the entire line
-                if (bgColor != null && !highlightedLines.contains(lineNumber)) {
+                // Highlight the entire line (only once per line)
+                if (bgColor != null && lineNumber !in highlightedLines) {
                     val lineStart = document.getLineStartOffset(lineNumber)
                     val lineEnd = document.getLineEndOffset(lineNumber)
-                    val lineRange = TextRange(lineStart, lineEnd)
-                    
+
                     val lineAttributes = TextAttributes().apply {
                         backgroundColor = bgColor
                     }
 
-                    holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES)
-                        .range(lineRange)
+                    holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+                        .range(TextRange(lineStart, lineEnd))
                         .enforcedTextAttributes(lineAttributes)
-                        .afterEndOfLine()
                         .create()
-                    
+
                     highlightedLines.add(lineNumber)
                 }
 
-                // Highlight the specific matched text
+                // Highlight the matched text
                 val textAttributes = TextAttributes().apply {
                     backgroundColor = bgColor
                     foregroundColor = fgColor ?: if (bgColor != null) getContrastTextColor(bgColor) else null
                 }
 
-                holder.newSilentAnnotation(HighlightSeverity.TEXT_ATTRIBUTES)
-                    .range(matchRange)
+                holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+                    .range(TextRange(matchStart, matchEnd))
                     .enforcedTextAttributes(textAttributes)
                     .create()
             }
