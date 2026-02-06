@@ -18,12 +18,13 @@ data class HighlightPattern(
 )
 class HighlightSettingsState : PersistentStateComponent<HighlightSettingsState> {
     var patterns: MutableList<HighlightPattern> = mutableListOf(
-        HighlightPattern("FIX", "#FFFFFF", "#FF0000"),
-        HighlightPattern("TODO", "#000000", "#FFFF00"),
-        HighlightPattern("WARN", "#000000", "#FFA500"),
-        HighlightPattern("OBS", "#FFFFFF", "#0000FF"),
-        HighlightPattern("QUESTION", "#FFFFFF", "#800080")
+        HighlightPattern("FIX", "#5C4033", "#F8B4B4"),
+        HighlightPattern("TODO", "#5C4033", "#FEF3C7"),
+        HighlightPattern("WARN", "#5C4033", "#FED7AA"),
+        HighlightPattern("OBS", "#1E3A5F", "#BFDBFE"),
+        HighlightPattern("QUESTION", "#4C1D95", "#DDD6FE")
     )
+    var highlightEntireLine: Boolean = true
 
     override fun getState(): HighlightSettingsState = this
 
