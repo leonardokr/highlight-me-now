@@ -2,8 +2,6 @@
 .gradle/
 build/
 gradle-app.setting
-!gradle-wrapper.jar
-!gradle-wrapper.properties
 
 # IntelliJ IDEA
 .idea/
@@ -14,10 +12,13 @@ out/
 
 # Java
 *.class
-*.jar
 *.war
 *.ear
 hs_err_pid*
+
+# JAR files (except gradle wrapper)
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
 
 # OS
 .DS_Store
