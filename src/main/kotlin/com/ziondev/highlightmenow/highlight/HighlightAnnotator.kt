@@ -6,10 +6,10 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.psi.PsiElement
-import com.intellij.ui.ColorUtil
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiWhiteSpace
+import com.intellij.ui.ColorUtil
 import com.intellij.openapi.util.TextRange
-
 import com.intellij.openapi.util.Key
 import java.awt.Color
 
@@ -20,13 +20,13 @@ class HighlightAnnotator : Annotator {
     }
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-        // Ignoramos o PsiFile para evitar re-processar o arquivo inteiro múltiplas vezes.
-        // O IntelliJ chamará o anotador para cada elemento PSI.
-        // Processamos apenas elementos folha (sem filhos) que contêm o texto.
-        if (element is PsiFile || element.firstChild != null) return
+        if (element is PsiFile || element is PsiWhiteSpace) return
 
-        val text = element.text ?: return
-        if (text.isEmpty()) return
+        // Only process leaf elements (no PSI children)
+        if (element.firstChild != null) return
+
+        val text = element.text
+        if (text.isNullOrBlank()) return
         
         val patterns = HighlightSettingsState.getInstance().patterns
         if (patterns.isEmpty()) return
@@ -65,7 +65,7 @@ class HighlightAnnotator : Annotator {
 
                 if (bgColor == null && fgColor == null) continue
 
-                // Destaque da linha inteira
+                // Highlight the entire line
                 if (bgColor != null && !highlightedLines.contains(lineNumber)) {
                     val lineStart = document.getLineStartOffset(lineNumber)
                     val lineEnd = document.getLineEndOffset(lineNumber)
@@ -84,7 +84,7 @@ class HighlightAnnotator : Annotator {
                     highlightedLines.add(lineNumber)
                 }
 
-                // Destaque do texto específico
+                // Highlight the specific matched text
                 val textAttributes = TextAttributes().apply {
                     backgroundColor = bgColor
                     foregroundColor = fgColor ?: if (bgColor != null) getContrastTextColor(bgColor) else null

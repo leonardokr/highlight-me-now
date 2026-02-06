@@ -15,6 +15,6 @@
         <applicationConfigurable instance="com.ziondev.highlightmenow.settings.HighlightSettingsConfigurable"
                                  id="com.ziondev.highlightmenow.settings.HighlightSettingsConfigurable"
                                  key="settings.display.name"/>
-        <annotator language="" implementationClass="com.ziondev.highlightmenow.highlight.HighlightAnnotator"/>
+        <annotator language="any" implementationClass="com.ziondev.highlightmenow.highlight.HighlightAnnotator"/>
     </extensions>
 </idea-plugin>
