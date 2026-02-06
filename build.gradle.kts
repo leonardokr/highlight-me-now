@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.ziondev.highlightmenow"
-version = "1.0-SNAPSHOT"
+version = project.findProperty("pluginVersion")?.toString() ?: "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
