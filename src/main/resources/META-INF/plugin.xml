@@ -1,0 +1,20 @@
+<idea-plugin>
+    <id>com.ziondev.highlightmenow</id>
+    <name>Highlight Me Now</name>
+    <vendor>Zion Dev</vendor>
+
+    <description>Plugin to highlight lines based on text patterns.</description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+
+    <resource-bundle>messages.HighlightMeNowBundle</resource-bundle>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="com.ziondev.highlightmenow.settings.HighlightSettingsState"/>
+        <applicationConfigurable instance="com.ziondev.highlightmenow.settings.HighlightSettingsConfigurable"
+                                 id="com.ziondev.highlightmenow.settings.HighlightSettingsConfigurable"
+                                 key="settings.display.name"/>
+        <annotator language="" implementationClass="com.ziondev.highlightmenow.highlight.HighlightAnnotator"/>
+    </extensions>
+</idea-plugin>
