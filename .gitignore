@@ -40,4 +40,5 @@ Thumbs.db
 # Local configuration
 local.properties
 .env
-.intellijPlatformgradle.properties
+.intellijPlatform
+gradle.properties
